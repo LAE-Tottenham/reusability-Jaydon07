@@ -1,3 +1,4 @@
+import botfunc
 import requests
 from pyfiglet import Figlet
 import os, time
@@ -6,12 +7,6 @@ import os, time
 
 # Define your reusable functions here:
 # Make sure each function only does ONE thing!!!!!!!!!!!
-
-def guess_gender(name):
-    gender_resp = requests.get(f"https://api.genderize.io/?name={name}").json()
-    gender = gender_resp["gender"]
-    prob_percent = gender_resp["probability"] * 100
-    return [gender, prob_percent]
 
 ###########################################
 
@@ -22,8 +17,13 @@ def weird_weather_bot():
 
     print("Welcome to the weird weather bot :)")
     print("-----------------------------------\n")
-    name = input("May I take your first name please? ")
-    gender_result = guess_gender(name)
+    name = ""
+    while len(name) <= 0:
+        name = input("May I take your first name please?")
+        if not name.isalpha():
+            name = ""
+            print("Name invalid. Try again.")
+    gender_result = botfunc.guess_gender(name)
     gender = gender_result[0]
     prob_percent = gender_result[1]
     print(f"\nHmmm, I'm {prob_percent}% sure you are a {gender}.")
@@ -35,11 +35,10 @@ def weird_weather_bot():
         print("Ahhhh, sorry! :(")
 
     postcode_raw = input("\nSo, what's your postcode? ")
-    postcode_resp = requests.get(f"https://api.postcodes.io/postcodes/{postcode_raw}").json()
-
-    area = postcode_resp['result']['admin_ward']
-    longitude = postcode_resp['result']['longitude']
-    latitude = postcode_resp['result']['latitude']
+    postcode_result = botfunc.postcode_fetcher(postcode_raw)
+    area = postcode_result[0]
+    longitude = postcode_result[1]
+    latitude = postcode_result[2]
     print(f"Nice! so you live in {area}.\n")
 
     print("Let me just check the weather there today...\n")
@@ -51,8 +50,7 @@ def weird_weather_bot():
     input("\nWould you like a cat fact while you wait? ")
     print("Doesn't matter what you think, I'm going to give you one anyway :)")
     time.sleep(3)
-    joke_resp = requests.get("https://catfact.ninja/fact").json()
-    joke = joke_resp['fact']
+    joke = botfunc.cat_facts()
     print("\n###########################")
     print("CAT FACT:")
     print(f"\n{joke}\n")
@@ -67,13 +65,10 @@ def weird_weather_bot():
         time.sleep(1)
         print("...")
 
-    weather_resp = requests.get(f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid=4d30afa58f6f935d861edecad3639cda").json()
-    # print(weather_resp)
-    weather_kelvin = weather_resp["main"]["temp"]
-    # convert to degrees
-    weather_degrees = int(weather_kelvin - 273.15)
-    main_weather_desc = weather_resp["weather"][0]["main"]
-    second_weather_desc = weather_resp["weather"][0]["description"]
+    weather_result = botfunc.weather_fetcher(latitude, longitude)
+    weather_degrees = weather_result[0]
+    main_weather_desc = weather_result[1]
+    second_weather_desc = weather_result[2]
     print(f"\nThe weather in {area}:\n")
     print(str(weather_degrees) + "℃")
     print(f"{main_weather_desc} - {second_weather_desc}")
@@ -85,13 +80,24 @@ weird_weather_bot()
 # After you have written the reusable functions, answer the following:
 # Questions:
 # 1. What are the preconditions for your code not to break?
+# The name and postcode must be included in the respective databases.
+
 # 2. Validate the user's input based on your preconditions.
+#
+
 # 3. Why was it useful to use reusable components in this case? Please mention at least 2 reasons and don't forget to contextualise.
+# It served as a way to greatly simplify the code, making it easier to read and debug the bot. In addition, there is now potential to reuse these functions within the bot without needing to re-write the functions.
+
 
 # Further Tasks:
 # 1. Put your functions in seperate appropriate files and import them in.
+# Done
+
 # 2. Make sure all of your functions (except the main one) only do ONE thing or process.
+# Done
+
 # 3. Add your own twist to the code.
+#
 
 # Extension:
 # Add the following apis as reusable components and use them in your code:
